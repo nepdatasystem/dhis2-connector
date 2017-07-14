@@ -42,6 +42,8 @@ import groovyx.net.http.ContentType
 class ProgramService {
 
     final def PATH = "/programs"
+    final def PATH_PROGRAM_TRACKED_ENTITY_ATTRIBUTES = "programTrackedEntityAttributes"
+    final def DELETIONS = "deletions"
 
     def apiService
 
@@ -82,6 +84,27 @@ class ProgramService {
         def result = apiService.put(auth, PATH, program, program.id, query, ContentType.JSON, apiVersion)
 
         return result
+    }
+
+    /**
+     * Deletes the specified program
+     *
+     * @param auth DHIS 2 credentials
+     * @param programId The id of the program to delete
+     * @param apiVersion DHIS 2 api version
+     * @return The parsed Result object
+     */
+    def delete(def auth, def programId, ApiVersion apiVersion = null) {
+        log.debug ">>> program: " + programId
+
+        def path = "${PATH}/${programId}"
+
+        def result = apiService.delete(auth, path, [:], ContentType.JSON, apiVersion)
+
+        log.debug "<<< program delete, result: " + result
+
+        return result
+
     }
 
     /**

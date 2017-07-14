@@ -94,6 +94,27 @@ class DataElementService {
     }
 
     /**
+     * Deletes the specified data element
+     *
+     * @param auth DHIS 2 credentials
+     * @param dataElementId The Id of the data element to delete
+     * @param apiVersion ApiVersion to use
+     * @return The parsed Result object from the API
+     */
+    def delete(def auth, def dataElementId, ApiVersion apiVersion = null) {
+        log.debug ">>> dataElement: " + dataElementId
+
+        def path = "${PATH}/${dataElementId}"
+
+        def result = apiService.delete(auth, path, [:], ContentType.JSON, apiVersion)
+
+        log.debug "<<< dataElement, result: " + result
+
+        return result
+
+    }
+
+    /**
      * Retrieves the specified Data Element from the DHIS 2 API
      *
      * @param auth DHIS 2 Credentials
@@ -208,7 +229,7 @@ class DataElementService {
      *
      * @param auth DHIS 2 Credentials
      * @param fields Fields requested in the response from the API
-     * @param apiVersion
+     * @param apiVersion DHIS 2 api version
      * @return A lookup map of all DataElements by code
      */
     def getLookup(def auth, ArrayList<String> fields = [":all"],

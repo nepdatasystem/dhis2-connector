@@ -107,6 +107,27 @@ class ProgramStageService {
     }
 
     /**
+     * Deletes the specified program stage
+     *
+     * @param auth DHIS 2 credentials
+     * @param programStageId The id of the program stage to delete
+     * @param apiVersion DHIS 2 api version
+     * @return The parsed Result object
+     */
+    def delete(def auth, def programStageId, ApiVersion apiVersion = null) {
+        log.debug ">>> program stage: " + programStageId
+
+        def path = "${PATH}/${programStageId}"
+
+        def result = apiService.delete(auth, path, [:], ContentType.JSON, apiVersion)
+
+        log.debug "<<< program stage delete, result: " + result
+
+        return result
+
+    }
+
+    /**
      * Assigns a program stage data element to the program stage
      *
      * @param auth DHIS 2 Credentials

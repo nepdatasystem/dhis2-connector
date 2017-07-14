@@ -83,6 +83,23 @@ class TrackedEntityAttributeService {
     }
 
     /**
+     * Deletes the specified tracked entity attribute
+     *
+     * @param auth DHIS 2 credentials
+     * @param trackedEntityAttributeId The id of the tracked entity attribute to delete
+     * @param apiVersion DHIS 2 api version
+     * @return The parsed Result object
+     */
+    def delete (def auth, def trackedEntityAttributeId, ApiVersion apiVersion = null) {
+
+        def path = "${PATH}/${trackedEntityAttributeId}"
+
+        def result = apiService.delete(auth, path, [:], ContentType.JSON, apiVersion)
+
+        return result
+    }
+
+    /**
      * Finds a TrackedEntityAttribute by the specified code
      *
      * @param auth DHIS 2 Credentials

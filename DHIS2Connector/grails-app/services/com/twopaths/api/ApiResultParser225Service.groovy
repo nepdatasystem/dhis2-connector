@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2014-2017. Institute for International Programs at Johns Hopkins University.
  * All rights reserved.
- *
+ *  
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * Redistributions of source code must retain the above copyright notice, this
@@ -9,11 +9,11 @@
  * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * Neither the name of the NEP project, Institute for International Programs,
+ * Neither the name of the NEP project, Institute for International Programs, 
  * Johns Hopkins University nor the names of its contributors may
  * be used to endorse or promote products derived from this software without
  * specific prior written permission.
- *
+ *  
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -37,19 +37,16 @@ import grails.transaction.Transactional
 import org.apache.http.HttpStatus
 
 /**
- * Parser of Results using the 2.24 version of the API.
- * Note that in version 2.24 according to documentation most of the API is versioned.
- * We didn't find any exceptions in DHIS 2 Connector implemented code.
+ * Parser of Results using the 2.25 version of the API.
  *
- * When upgrading to this version from version 2.23, there have been no changes in the response object
+ * When upgrading to this version from version 2.24, there appear to have been no changes in the response object
  * and behaviour.
  *
  */
 @Transactional
-class ApiResultParser224Service extends AbstractApiResultParser {
+class ApiResultParser225Service extends AbstractApiResultParser {
 
     /**
-     *
      * Parses the DHIS 2 API response into a consistent Result object for consumption
      *
      * @param action The ApiActionType
@@ -69,7 +66,7 @@ class ApiResultParser224Service extends AbstractApiResultParser {
         // Some API calls return text instead of JSON...which is a bug...and can probably be removed at some stage...
         if (status == HttpStatus.SC_INTERNAL_SERVER_ERROR) {
             result.success = false
-            result.errors << [code: "dhis2.error", args: [action.value(), "DHIS 2 Internal Server Error"]]
+            result.errors << [code: "dhis2.error", args: [action.value(), result.message?:"DHIS 2 Internal Server Error"]]
         }
 
         // If doing a get, then set the data
@@ -88,13 +85,33 @@ class ApiResultParser224Service extends AbstractApiResultParser {
             // This is new in 2.24
             if (data?.response?.responseType == ApiResponseType.ObjectReport.value()) {
                 // this will mutate/populate the Result object
-                parseObjectReport(status, data, result)
+                parseObjectReport(action, status, data, result)
 
-            } else if (status == HttpStatus.SC_OK) {
+            } else if (action == ApiActionType.Delete && data?.status == ERROR) {
+                // posting a delete can return a general error
+                // if the status is 500, we've already added the general error above
+                if (status != HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+                    result.errors << [code: "dhis2.error", args: [action.value(), data?.message]]
+                }
+                result.importCount = [
+                        "deleted" : 0,
+                        "ignored" : 1,
+                        "imported": 0,
+                        "created" : 0,
+                        "updated" : 0
+                ]
+                // note tracked entity instance bulk delete return status 201 SC_CREATED which is inconsistent
+                // with event bulk delete which returns status 200 SC_OK
+            } else if (status in  [
+                    HttpStatus.SC_OK,
+                    HttpStatus.SC_CREATED,
+                    HttpStatus.SC_CONFLICT]) {
                 // this will mutate/populate the Result object
-                parseHttpStatusOK(data, action, requestBody, result)
+                parseImportSummary(data, action, requestBody, result)
 
             }
+
+
 
             // HTTP status
             result.status = status
@@ -128,15 +145,16 @@ class ApiResultParser224Service extends AbstractApiResultParser {
         return result
     }
 
-    /*
+    /**
      * Method to parse out ObjectReport (new in v-2.24)
      * Mutates the Result object
      *
+     * @param actionType The ApiActionType
      * @param status The response status
      * @param data data returned by the API
      * @param result The Result object that will be mutated
      */
-    private void parseObjectReport(def status, def data, Result result) {
+    private void parseObjectReport(ApiActionType actionType, def status, def data, Result result) {
         // 2.24 returns status code = 201 (Created) for created objects instead of 200 (OK)
         if (status == HttpStatus.SC_CREATED) {
             //make assumption there is a uid when the http status is CREATED
@@ -150,16 +168,16 @@ class ApiResultParser224Service extends AbstractApiResultParser {
                     "updated" : 0
             ]
         }
-        // 2.24 returns status code = 200 (OK) for updated objects
+        // 2.24 returns status code = 200 (OK) for updated or deleted objects
         else if (status == HttpStatus.SC_OK) {
             result.lastImported = data?.response?.uid
             // assume that there is only one imported because object reports are for only one object
             result.importCount = [
-                    "deleted" : 0,
+                    "deleted" : actionType == ApiActionType.Delete ? 1 : 0,
                     "ignored" : 0,
                     "imported": 0,
                     "created" : 0,
-                    "updated" : 1
+                    "updated" : (actionType == ApiActionType.Update || actionType == ApiActionType.Import) ? 1 : 0
             ]
         }
         // 2.24 returns status code = 409 (Conflict) for created objects if there are errors instead of 200 (OK) with inner conflicts
@@ -184,16 +202,16 @@ class ApiResultParser224Service extends AbstractApiResultParser {
         }
     }
 
-    /*
+    /**
      * Method to parse out info when Http Status is OK (200)
      * This method mutates the Result object
      *
-     * @param data data returned by the API
+     * @param data The data returned by the API call
      * @param action The ApiActionType
-     * @param requestBody The requestBody submitted to the API if any
+     * @param requestBody The request body from the original request. The import summary errors are returned by requestBody indices
      * @param result The Result object that will be mutated
      */
-    private void parseHttpStatusOK(def data, ApiActionType action, def requestBody, Result result) {
+    private void parseImportSummary(def data, ApiActionType action, def requestBody, Result result) {
         def importSummary
         // 2.23/2.24 versioned API for Metadata has this returned
         if (data?.typeReports) {
@@ -204,16 +222,15 @@ class ApiResultParser224Service extends AbstractApiResultParser {
             log.debug "data.response.conflicts: ${data.response.conflicts}"
             importSummary = data.response
 
-            // If responseType == importSummaries, get the importSummary
-            if (importSummary?.responseType == "ImportSummaries") {
-                // we don't currently have any queries that would return more than one summary here.
-                // The only one that returns more than one summary is the /metadata/ call, which
-                // is not wrapped in a response, and is handled with the parsing of importTypeSummaries
-                importSummary = importSummary?.importSummaries?.get(0)
-            }
-
-        } else if (data?.responseType == "ImportSummary") {
+        } else if (data?.responseType in ["ImportSummary", "ImportSummaries"]) {
             importSummary = data
+        }
+
+        // Note that ImportSummaries returned are inconsistend: can either be at the top level of the data object,
+        // or could be wrapped in data.response. This is taken care of by the above logic.
+        if (importSummary?.responseType == "ImportSummaries") {
+            // If responseType == importSummaries, get the flattened importSummary with errors (if any) extracted
+            importSummary = parseImportSummaries(importSummary)
         }
 
         if (importSummary?.conflicts != null) {
@@ -261,15 +278,58 @@ class ApiResultParser224Service extends AbstractApiResultParser {
         */
     }
 
-    /*
+    /**
+     * This method will parse out the ImportSummaries. Some calls that return ImportSummaries are for instances
+     * the bulk deletion of Events and Tracked Entity Instances
+     *
+     * @param importSummary The import summary to parse
+     * @return The extracted importSummary
+     */
+    private LinkedHashMap<String, Object> parseImportSummaries(importSummary) {
+        def extractedSummary
+        if (importSummary?.importSummaries?.size() == 1) {
+            extractedSummary = importSummary?.importSummaries?.get(0)
+        } else if (importSummary?.importSummaries?.size() > 1) {
+            // now posting multiple objects for deletion (eg: events), so need to get the overall counts,
+            // which are already in the top level of the data.response, then extract any errors
+
+            extractedSummary = [
+                    responseType: "ImportSummary",
+                    status      : importSummary.status,
+                    importCount : [
+                            imported: importSummary.imported,
+                            updated : importSummary.updated,
+                            deleted : importSummary.deleted,
+                            ignored : importSummary.ignored
+                    ]
+            ]
+            // if there were any objects ignored, need to extract specific errors in the importSummaries
+            if (importSummary?.ignored > 0) {
+                def conflicts = []
+                def errorSummaries = importSummary.importSummaries.findAll { it.status == ERROR }
+                errorSummaries?.each { errorSummary ->
+                    conflicts.add([
+                            "object": UNKNOWN,
+                            "value" : errorSummary.description
+                    ])
+                }
+
+                extractedSummary.conflicts = conflicts
+            }
+
+        }
+        return extractedSummary
+    }
+
+    /**
      * This method will parse out the Type Reports. This is currently used by the Metadata API call
      * This method mutates the Result object
      *
-     * @param data data returned by the API
+     * @param data The data returned by the API call
      * @param action The ApiActionType
-     * @param requestBody The requestBody submitted to the API if any
+     * @param requestBody The request body from the original request. The import summary errors are returned by requestBody indices
      * @param result The Result object that will be mutated
-     * @return the importSummary for the type reports
+     * @return The import summary containing the parsed type reports
      */
     private def parseTypeReports(def data, ApiActionType action, def requestBody, def result) {
         // the importSummary will just be the data root
@@ -308,7 +368,7 @@ class ApiResultParser224Service extends AbstractApiResultParser {
 
                 objectReport.errorReports?.each { errorReport ->
 
-                    def objectInfo = objectWithError?.id ?: objectWithError?.name ?: "Unknown"
+                    def objectInfo = objectWithError?.id ?: objectWithError?.name ?: UNKNOWN
                     // if we have both the id and the name, show both
                     if (objectWithError?.id && objectWithError?.name) {
                         objectInfo += ": $objectWithError.name"

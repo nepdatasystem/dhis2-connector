@@ -29,8 +29,8 @@
 
 class DHIS2ConnectorGrailsPlugin {
     // the plugin version
-    def version = "2.24.5"
-    def dhis2Version = "2.24"
+    def version = "2.25.5"
+    def dhis2Version = "2.25"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.4 > *"
     // resources that are excluded from plugin packaging

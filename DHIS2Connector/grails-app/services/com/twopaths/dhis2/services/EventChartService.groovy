@@ -31,36 +31,77 @@ package com.twopaths.dhis2.services
 
 import com.twopaths.dhis2.api.ApiVersion
 import grails.transaction.Transactional
+import groovyx.net.http.ContentType
 
 /**
- * Service to do TrackedEntity CRUD with the DHIS 2 API
+ * Service to do Event Chart CRUD with the DHIS 2 API
  */
 @Transactional
-class TrackedEntityService {
+class EventChartService {
 
-    final def PATH = "/trackedEntities"
-    
+    final def PATH = "/eventCharts"
+
     def apiService
 
     /**
-     * Finds all TrackedEntities in the system
+     * Finds all event charts that contain the supplied programId
      *
-     * @param auth DHIS 2 Credentials
-     * @param fields Fields requested in the response from the API
-     * @param apiVersion ApiVersion to use
-     * @return A full list of trackedEntities
+     * @param auth DHIS 2 credentials
+     * @param programId Id of the program to find event charts for
+     * @param fields EventChart fields to return
+     * @param apiVersion DHIS 2 api version
+     * @return found event charts if any
      */
-    def findAll(def auth, ArrayList<String> fields = [":all"],
-                ApiVersion apiVersion = null) {
+    def findByProgramId(def auth, def programId, ArrayList<String> fields = [],
+                        ApiVersion apiVersion = null) {
 
-        def queryParams = [:]
+        def queryParams = [filter: "program.id:eq:${programId}"]
 
         if (fields?.size() > 0) {
             queryParams.put("fields", fields.join(','))
         }
 
-        def trackedEntities = apiService.get(auth, "${PATH}", queryParams, null, apiVersion)?.data
+        return find(auth, queryParams, apiVersion)
+    }
 
-        return trackedEntities
+
+    /**
+     * Finds Event Charts based off supplied query params
+     *
+     * @param auth DHIS 2 credentials
+     * @param query map of query params
+     * @param apiVersion DHIS 2 api version
+     * @return event charts found
+     */
+    def find (def auth, def query = [:], ApiVersion apiVersion = null) {
+
+        def eventCharts = apiService.get(auth, "${PATH}", query, null, apiVersion)?.data?.eventCharts
+
+        log.debug "event charts: " + eventCharts
+
+        return eventCharts
+
+    }
+
+    /**
+     * Deletes an event chart
+     *
+     * @param auth DHIS 2 credentials
+     * @param eventChartId Id of the event chart to delete
+     * @param apiVersion version of the DHIS 2 API to use
+     * @return the Result of the deletion
+     */
+    def delete(def auth, def eventChartId, ApiVersion apiVersion = null) {
+
+        log.debug ">>> event chart: " + eventChartId
+
+        def path = "${PATH}/${eventChartId}"
+
+        def result = apiService.delete(auth, path, [:], ContentType.JSON, apiVersion)
+
+        log.debug "<<< event chart, result: " + result
+
+        return result
+
     }
 }

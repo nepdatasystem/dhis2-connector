@@ -29,6 +29,7 @@
 
 package com.twopaths.dhis2.services
 
+import com.twopaths.dhis2.api.ApiStrategy
 import com.twopaths.dhis2.api.ApiVersion
 import grails.transaction.Transactional
 import groovyx.net.http.ContentType
@@ -79,6 +80,42 @@ class TrackedEntityInstanceService {
                 ContentType.JSON, apiVersion)
 
         log.debug "update, result: " + result
+
+        return result
+    }
+
+    /**
+     * Deletes the specified tracked entity instance
+     *
+     * @param auth DHIS 2 credentials
+     * @param trackedEntityInstanceId Id of the tracked entity instance to delete
+     * @param apiVersion DHIS 2 api version
+     * @return The parsed Result object
+     */
+    def delete (def auth, def trackedEntityInstanceId, ApiVersion apiVersion = null) {
+
+        def path = "${PATH}/${trackedEntityInstanceId}"
+
+        def result = apiService.delete(auth, path, [:], ContentType.JSON, apiVersion)
+
+        return result
+    }
+
+    /**
+     * Bulk deletes all the specified tracked entity instances
+     *
+     * @param auth DHIS 2 credentials
+     * @param trackedEntityInstancesToDelete The List of tracked entity instances to delete
+     * @param apiVersion DHIS 2 api version
+     * @return The parsed Result object
+     */
+    def bulkDelete (def auth, ArrayList<Map<String,String>> trackedEntityInstancesToDelete, ApiVersion apiVersion = null) {
+
+        def query = [strategy: ApiStrategy.DELETE.value()]
+
+        def body = [trackedEntityInstances: trackedEntityInstancesToDelete]
+
+        def result = apiService.post(auth, PATH, body, query, ContentType.JSON, apiVersion)
 
         return result
     }

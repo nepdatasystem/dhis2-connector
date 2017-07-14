@@ -53,9 +53,25 @@ class EventService {
      */
     def create(def auth, def event, def query = [:], ApiVersion apiVersion = null) {
 
-        def result = apiService.post(auth, PATH, event, query, ContentType.JSON, apiVersion)
+        def result = post(auth, event, query, apiVersion)
 
         log.debug "create, result: ${result}"
+
+        return result
+    }
+
+    /**
+     * Makes a POST to the events API
+     *
+     * @param auth DHIS 2 credentials
+     * @param body The body of the post
+     * @param query Map of query paramaters to use
+     * @param apiVersion DHIS 2 api version
+     * @return The parsed Result object
+     */
+    def post (def auth, def body, def query = [:], ApiVersion apiVersion = null) {
+
+        def result = apiService.post(auth, PATH, body, query, ContentType.JSON, apiVersion)
 
         return result
     }
@@ -75,7 +91,6 @@ class EventService {
     def update(def auth, def event, def eventId, def query = [:],
                ApiVersion apiVersion = null) {
 
-        // TODO: Fix when the DHIS 2 response changes
         def result = apiService.put(auth, PATH, event, eventId, query, ContentType.JSON, apiVersion)
 
         def message = result?.message
@@ -95,6 +110,44 @@ class EventService {
     }
 
     /**
+     * Deletes the specified event
+     *
+     * @param auth DHIS 2 credentials
+     * @param eventId The id of the event to delete
+     * @param apiVersion DHIS 2 api version
+     * @return The parsed Result object
+     */
+    def delete (def auth, def eventId, ApiVersion apiVersion = null) {
+
+        def path = "${PATH}/${eventId}"
+
+        def result = apiService.delete(auth, path, [:], ContentType.JSON, apiVersion)
+
+        return result
+    }
+
+    /**
+     * Bulk deletes all the events specified
+     *
+     * @param auth DHIS 2 credentials
+     * @param eventsToDelete List of event objects to delete
+     * @param apiVersion DHIS 2 api version
+     * @return The parsed Result object
+     */
+    def bulkDelete (def auth, ArrayList<Map<String,String>> eventsToDelete, ApiVersion apiVersion = null) {
+        // to bulk delete, the body is POSTed with strategy=DELETE
+
+        def query = [strategy: ApiStrategy.DELETE.value()]
+
+        def body = [events: eventsToDelete]
+
+        def result = post(auth, body, query, apiVersion)
+
+        return result
+
+    }
+
+    /**
      * Finds Events based on the query parameters supplied
      *
      * @param auth DHIS 2 Credentials
@@ -105,8 +158,6 @@ class EventService {
     def findByQuery(def auth, def query, ApiVersion apiVersion = null) {
 
         def events = apiService.get(auth, PATH, query, null, apiVersion)?.data
-
-        log.debug "findByQuery, events: ${events}"
 
         return events
     }
@@ -120,15 +171,29 @@ class EventService {
      * @param apiVersion ApiVersion to use
      * @return found events
      */
+    def findByProgramAndProgramStageId(def auth, def programId, def programStageId, def query = [:],
+                                       ApiVersion apiVersion = null) {
+
+        query <<  [program: programId, programStage: programStageId]
+
+        return findByQuery(auth, query, apiVersion)
+    }
+
+    /**
+     * Finds all events for the specified program stage and tracked entity instance
+     *
+     * @param auth DHIS 2 credentials
+     * @param programStageId The id of the program stage to find events for
+     * @param trackedEntityInstanceId The id of the tracked entity instance to find events for
+     * @param apiVersion DHIS 2 api version
+     * @return found Events if any
+     */
     def findByProgramStageIdAndTrackedEntityInstanceId(def auth, def programStageId, def trackedEntityInstanceId,
                                                        ApiVersion apiVersion = null) {
 
         def queryParams = [programStage: programStageId, trackedEntityInstance: trackedEntityInstanceId]
-        def event = apiService.get(auth, PATH, queryParams, null, apiVersion)?.data
 
-        log.debug "findByProgramStageIdAndTrackedEntityInstanceId, event: ${event}"
-
-        return event
+        return findByQuery(auth, queryParams, apiVersion)
     }
 
     /**
@@ -153,11 +218,7 @@ class EventService {
             queryParams.put("fields", fields.join(','))
         }
 
-        def event = apiService.get(auth, "${PATH}", queryParams, null,
-                apiVersion)?.data
+        return findByQuery(auth, queryParams, apiVersion)
 
-        log.debug "get, event: ${event}"
-
-        return event
     }
 }

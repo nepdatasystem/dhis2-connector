@@ -34,18 +34,17 @@ package com.twopaths.dhis2.api
  */
 enum ApiVersion {
 
-    /*
-    * The Default version of the API (no version number supplied). Will eventually be the current
-    * version of DHIS 2 being used as API versioning is gradually introduced.
-    */
-    DHIS2_DEFAULT_VERSION ("default", ""),
 
     /* Version 2.23 of the API. As of 2.23, this is only used for the /api/metadata API call */
     DHIS2_VERSION_223 ("2.23", "/23"),
 
     /* Version 2.24 of the API. As of 2.24, the majority of the API has been versioned. See comments
      * in ApiResultParser224Service.groovy */
-    DHIS2_VERSION_224 ("2.24", "/24")
+    DHIS2_VERSION_224 ("2.24", "/24"),
+
+    /* Version 2.25 of the API
+     */
+    DHIS2_VERSION_225 ("2.25", "/25")
 
 
     private static Map<String, ApiVersion> lookup = new HashMap<String, ApiVersion>()

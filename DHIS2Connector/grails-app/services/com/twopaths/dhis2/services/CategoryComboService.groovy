@@ -148,6 +148,26 @@ class CategoryComboService {
     }
 
     /**
+     * Deletes the Category Combo specified
+     *
+     * @param auth DHIS 2 Credentials
+     * @param categoryComboId The id of the category combo to delete
+     * @param apiVersion ApiVersion to use
+     * @return The parsed Result object from the API
+     */
+    def delete(def auth, def categoryComboId, ApiVersion apiVersion = null) {
+        log.debug ">>> categoryCombo: " + categoryComboId
+
+        def path = "${PATH}/${categoryComboId}"
+
+        def result = apiService.delete(auth, path, [:], ContentType.JSON, apiVersion)
+
+        log.debug "<<< categoryCombo, result: " + result
+
+        return result
+    }
+
+    /**
      * Assigns the specified Category to the specified CategoryCombo
      *
      * @param auth DHIS 2 Credentials

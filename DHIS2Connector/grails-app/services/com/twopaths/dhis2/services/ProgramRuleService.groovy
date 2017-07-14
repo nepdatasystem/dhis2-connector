@@ -27,27 +27,58 @@
  *
  */
 
-package com.twopaths.dhis2.api
+package com.twopaths.dhis2.services
+
+import com.twopaths.dhis2.api.ApiVersion
+import grails.transaction.Transactional
+import groovyx.net.http.ContentType
 
 /**
- * DHIS 2 defined value types
- * This is the list of supported DHIS ValueTypes for the DHIS 2 Connector, which is
- * a subset of the full list of DHIS 2 ValueTypes: https://www.dhis2.org/download/apidocs/org/hisp/dhis/common/ValueType.html
+ * Service to do Program Rule CRUD with the DHIS 2 API
  */
-enum ValueType {
-    INTEGER ("INTEGER"),
-    NUMBER ("NUMBER"),
-    TEXT ("TEXT")
+@Transactional
+class ProgramRuleService {
 
-    private String name
+    final def PATH = "/programRules"
 
+    def apiService
 
-    private ValueType (String name) {
-        this.name = name
+    /**
+     * Finds all Program Rules for the specified program
+     *
+     * @param auth DHIS 2 credentials
+     * @param programId The id of the program to retrieve program rules for
+     * @param apiVersion DHIS 2 api version
+     * @return found Program Rules if any
+     */
+    def findByProgramId(def auth, def programId, ApiVersion apiVersion = null) {
+
+        def queryParams = [filter: "program.id:eq:${programId}"]
+
+        def programRules = apiService.get(auth, "${PATH}", queryParams, null, apiVersion)?.data?.programRules
+
+        return programRules
+
     }
 
-    public String value() {
-        name
-    }
+    /**
+     * Deltes the specified program rule
+     *
+     * @param auth DHIS 2 credentials
+     * @param programRuleId The id of the program rule to delete
+     * @param apiVersion DHIS 2 api version
+     * @return The parsed Result object
+     */
+    def delete(def auth, def programRuleId, ApiVersion apiVersion = null) {
 
+        log.debug ">>> delete, programRuleId: " + programRuleId
+
+        def path = "${PATH}/${programRuleId}"
+
+        def result = apiService.delete(auth, path, [:], ContentType.JSON, apiVersion)
+
+        log.debug "<<< delete, programRuleId, result: " + result
+
+        return result
+    }
 }

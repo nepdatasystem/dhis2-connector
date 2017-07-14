@@ -27,27 +27,58 @@
  *
  */
 
-package com.twopaths.dhis2.api
+package com.twopaths.dhis2.services
+
+import com.twopaths.dhis2.api.ApiVersion
+import grails.transaction.Transactional
+import groovyx.net.http.ContentType
 
 /**
- * DHIS 2 defined value types
- * This is the list of supported DHIS ValueTypes for the DHIS 2 Connector, which is
- * a subset of the full list of DHIS 2 ValueTypes: https://www.dhis2.org/download/apidocs/org/hisp/dhis/common/ValueType.html
+ * Service to do Program Rule Variable CRUD with the DHIS 2 API
  */
-enum ValueType {
-    INTEGER ("INTEGER"),
-    NUMBER ("NUMBER"),
-    TEXT ("TEXT")
+@Transactional
+class ProgramRuleVariableService {
 
-    private String name
+    final def PATH = "/programRuleVariables"
 
+    def apiService
 
-    private ValueType (String name) {
-        this.name = name
+    /**
+     * Finds all Program Rule Variables for the specified program
+     *
+     * @param auth DHIS 2 credentials
+     * @param programId The id of the program to retrieve program rule variables for
+     * @param apiVersion DHIS 2 api version
+     * @return found Program Rule Variables if any
+     */
+    def findByProgramId(def auth, def programId, ApiVersion apiVersion = null) {
+
+        def queryParams = [filter: "program.id:eq:${programId}"]
+
+        def programRuleVariables = apiService.get(auth, "${PATH}", queryParams, null, apiVersion)?.data?.programRuleVariables
+
+        return programRuleVariables
+
     }
 
-    public String value() {
-        name
-    }
+    /**
+     * Deletes the specified program rule variable
+     *
+     * @param auth DHIS 2 credentials
+     * @param programRuleVariableId The id of the program rule variable to delete
+     * @param apiVersion DHIS 2 api version
+     * @return The parsed Result object
+     */
+    def delete(def auth, def programRuleVariableId, ApiVersion apiVersion = null) {
 
+        log.debug ">>> delete, programRuleVariableId: " + programRuleVariableId
+
+        def path = "${PATH}/${programRuleVariableId}"
+
+        def result = apiService.delete(auth, path, [:], ContentType.JSON, apiVersion)
+
+        log.debug "<<< delete, programRuleVariableId, result: " + result
+
+        return result
+    }
 }

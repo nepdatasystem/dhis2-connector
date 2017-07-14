@@ -27,27 +27,37 @@
  *
  */
 
-package com.twopaths.dhis2.api
+package com.twopaths.dhis2.services
+
+import com.twopaths.dhis2.api.ApiVersion
+import grails.transaction.Transactional
+import groovyx.net.http.ContentType
 
 /**
- * DHIS 2 defined value types
- * This is the list of supported DHIS ValueTypes for the DHIS 2 Connector, which is
- * a subset of the full list of DHIS 2 ValueTypes: https://www.dhis2.org/download/apidocs/org/hisp/dhis/common/ValueType.html
+ * Service to do Program Tracked Entity Attribute CRUD with the DHIS 2 API
  */
-enum ValueType {
-    INTEGER ("INTEGER"),
-    NUMBER ("NUMBER"),
-    TEXT ("TEXT")
+@Transactional
+class ProgramTrackedEntityAttributeService {
 
-    private String name
+    final def PATH = "/programTrackedEntityAttributes"
 
+    def apiService
 
-    private ValueType (String name) {
-        this.name = name
-    }
+    /**
+     * Deletes the specified program tracked entity attribute
+     *
+     * @param auth DHIS 2 credentials
+     * @param programTrackedEntityAttributeId The id of the program tracked entity attribute to delete
+     * @param apiVersion DHIS 2 api version
+     * @return The parsed Result object
+     */
+    def delete (def auth, def programTrackedEntityAttributeId, ApiVersion apiVersion = null) {
 
-    public String value() {
-        name
+        def path = "${PATH}/${programTrackedEntityAttributeId}"
+
+        def result = apiService.delete(auth, path, [:], ContentType.JSON, apiVersion)
+
+        return result
     }
 
 }

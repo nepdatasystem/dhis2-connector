@@ -52,8 +52,8 @@ class DataSetService {
     public final def FIELD_USER = "user[id,name]"
     public final def FIELD_CREATED = "created"
     public final def FIELD_LAST_UPDATED = "lastUpdated"
-    public final def FIELD_DATA_ELEMENTS = "dataElements"
-    public final def FIELD_DATA_ELEMENTS_CATEGORY_COMBO = "[id,categoryCombo[name,categoryOptionCombos::isNotEmpty]"
+    public final def FIELD_DATA_SET_ELEMENTS = "dataSetElements"
+    public final def FIELD_DATA_ELEMENTS_CATEGORY_COMBO = "[id,dataElement[id,categoryCombo[name,categoryOptionCombos::isNotEmpty]]"
 
     /**
      * Creates a DataSet via the DHIS 2 API
@@ -72,6 +72,26 @@ class DataSetService {
         log.debug "<<< dataSet, result: " + result
 
         return result
+    }
+
+    /**
+     * Deletes a data set
+     *
+     * @param auth DHIS 2 Credentials
+     * @param dataSetId The Id of the data set to delete
+     * @return The parsed Result object from the API
+     */
+    def delete(def auth, def dataSetId, ApiVersion apiVersion = null) {
+        log.debug ">>> dataSet: " + dataSetId
+
+        def path = "${PATH}/${dataSetId}"
+
+        def result = apiService.delete(auth, path, [:], ContentType.JSON, apiVersion)
+
+        log.debug "<<< dataSet, result: " + result
+
+        return result
+
     }
 
     /**
@@ -116,7 +136,7 @@ class DataSetService {
                 FIELD_USER,
                 FIELD_CREATED,
                 FIELD_LAST_UPDATED,
-                FIELD_DATA_ELEMENTS + FIELD_DATA_ELEMENTS_CATEGORY_COMBO
+                FIELD_DATA_SET_ELEMENTS + FIELD_DATA_ELEMENTS_CATEGORY_COMBO
         ]
 
         def dataSets = findAll(auth, dataSetFields, apiVersion)
@@ -124,12 +144,12 @@ class DataSetService {
         def dataSetsWithData = findDataSetsWithData(auth, apiVersion)?.flatten()
 
         dataSets.each { dataSet ->
-            dataSet.hasMetadata = dataSet.dataElements?.size() > 0
+            dataSet.hasMetadata = dataSet.dataSetElements?.size() > 0
             dataSet.hasDisaggregations = false
             if (dataSet.hasMetadata) {
-                dataSet.dataElements.find { dataElement ->
-                    if (dataElement.categoryCombo?.name != "default") {
-                        dataSet.hasDisaggregations = dataElement.categoryCombo?.categoryOptionCombos
+                dataSet.dataSetElements.find { dataSetElement ->
+                    if (dataSetElement?.dataElement?.categoryCombo?.name != "default") {
+                        dataSet.hasDisaggregations = dataSetElement.dataElement.categoryCombo?.categoryOptionCombos
                         return true
                     }
                 }
@@ -143,10 +163,11 @@ class DataSetService {
      * Returns a list of all DataSets that have associated data
      *
      * @param auth DHIS 2 Credentials
+     * @param criteria Map of criteria to find DataSets for
      * @param apiVersion ApiVersion to use
      * @return A list of all DataSets that have associated data
      */
-    def findDataSetsWithData (def auth, ApiVersion apiVersion = null) {
+    def findDataSetsWithData (def auth, def criteria = [:], ApiVersion apiVersion = null) {
 
         def sqlViewName = propertiesService.getProperties().getProperty('nep.sqlview.datasets.with.data.name', null)
 
@@ -164,7 +185,21 @@ class DataSetService {
         // need to execute the view first in case the actual underlying db view was deleted
         sqlViewService.executeView(auth, sqlView.id, apiVersion)
 
-        return sqlViewService.getViewData(auth, sqlView.id, apiVersion)
+        return sqlViewService.getViewData(auth, sqlView.id, criteria, apiVersion)
+    }
+
+    /**
+     * Determines if the specified Data Set has data or not
+     *
+     * @param auth DHIS 2 credentials
+     * @param dataSetID The id of the data set to check for data
+     * @param apiVersion DHIS 2 api version
+     * @return if the data set has data or not
+     */
+    boolean dataSetHasData (def auth, def dataSetID, ApiVersion apiVersion = null) {
+        def dbRows = findDataSetsWithData(auth, ["uid" : dataSetID], apiVersion)
+
+        return (dbRows?.size() > 0)
     }
 
     /**

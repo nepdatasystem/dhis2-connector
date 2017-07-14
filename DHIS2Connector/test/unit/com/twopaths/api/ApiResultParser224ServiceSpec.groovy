@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2014-2017. Institute for International Programs at Johns Hopkins University.
  * All rights reserved.
- *
+ *  
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * Redistributions of source code must retain the above copyright notice, this
@@ -9,11 +9,11 @@
  * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * Neither the name of the NEP project, Institute for International Programs,
+ * Neither the name of the NEP project, Institute for International Programs, 
  * Johns Hopkins University nor the names of its contributors may
  * be used to endorse or promote products derived from this software without
  * specific prior written permission.
- *
+ *  
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -1083,5 +1083,64 @@ class ApiResultParser224ServiceSpec extends Specification {
         result.importTypeSummaries == null || result.importTypeSummaries.size() == 0
 
     }
+
+    void "Test 224 Parser for DataSet Create"() {
+        def requestBody = [
+                "name":"DataSet Name",
+                "shortName":"DataSet Name",
+                "periodType":"Yearly",
+                "openFuturePeriods":"0",
+                "categoryCombo":[
+                        "id":"RYnzt2JFGSf"
+                ],
+                "organisationUnits":[
+                        [
+                                "id":"qubeTudDNSC"
+                        ],
+                        [
+                                "id":"FEGZA6BEAjj"
+                        ],
+                        [
+                                "id":"GeGgihdOJ2p"
+                        ]
+                ]
+        ]
+
+        def responseData = [
+                "httpStatus": "Created",
+                "httpStatusCode": 201,
+                "status": "OK",
+                "response": [
+                        "responseType": "ObjectReport",
+                        "uid": "x8OJEkqiwnH",
+                        "klass": "org.hisp.dhis.dataset.DataSet"
+                ]
+        ]
+
+        def responseStatus = 201
+        Result result = service.parse(ApiActionType.Import, responseData, responseStatus, requestBody)
+
+        expect:
+
+        result != null
+        result.success == true
+
+        result.errors?.size() == 0
+        result.importCount != null
+
+        result.importCount.deleted == 0
+        result.importCount.ignored == 0
+        result.importCount.imported == 1
+        result.importCount.updated == 0
+
+        result.succeeded == 1
+        result.conflicts == null || result.conflicts?.size() == 0
+
+        result.status == HttpStatus.SC_CREATED
+
+        result.importTypeSummaries == null || result.importTypeSummaries.size() == 0
+
+    }
+
 
 }

@@ -27,27 +27,56 @@
  *
  */
 
-package com.twopaths.dhis2.api
+package com.twopaths.dhis2.services
+
+import com.twopaths.dhis2.api.ApiStrategy
+import com.twopaths.dhis2.api.ApiVersion
+import grails.transaction.Transactional
+import groovyx.net.http.ContentType
 
 /**
- * DHIS 2 defined value types
- * This is the list of supported DHIS ValueTypes for the DHIS 2 Connector, which is
- * a subset of the full list of DHIS 2 ValueTypes: https://www.dhis2.org/download/apidocs/org/hisp/dhis/common/ValueType.html
+ *  Service to do Program Data Element CRUD with the DHIS 2 API
  */
-enum ValueType {
-    INTEGER ("INTEGER"),
-    NUMBER ("NUMBER"),
-    TEXT ("TEXT")
+@Transactional
+class ProgramDataElementService {
 
-    private String name
+    final def PATH = "/programDataElements"
+    
+    def apiService
 
+    /**
+     * Deletes  the specified program data element
+     *
+     * @param auth DHIS 2 credentials
+     * @param programDataElementId The id of the program data element to delete
+     * @param apiVersion DHIS 2 api version
+     * @return The parsed Result object
+     */
+    def delete (def auth, def programDataElementId, ApiVersion apiVersion = null) {
 
-    private ValueType (String name) {
-        this.name = name
+        def path = "${PATH}/${programDataElementId}"
+
+        log.debug "programDataElement.delete"
+
+        def result = apiService.delete (auth, path, [:], ContentType.JSON, apiVersion)
+
+        return result
     }
 
-    public String value() {
-        name
-    }
+    /**
+     * Finds all Program Data Elements according to the specified query params
+     *
+     * @param auth DHIS 2 credentials
+     * @param queryParams Map of query parameters to use for the search
+     * @param apiVersion DHIS 2 api version
+     * @return found Program Data Elements if any
+     */
+    def find (def auth, queryParams = [:], ApiVersion apiVersion = null) {
 
+        log.debug "programDataElements.find"
+
+        def programDataElements = apiService.get(auth, "${PATH}", queryParams, null, apiVersion)?.data?.programDataElements
+
+        return programDataElements
+    }
 }

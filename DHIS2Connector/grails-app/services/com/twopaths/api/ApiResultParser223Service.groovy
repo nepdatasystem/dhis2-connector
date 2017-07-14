@@ -118,7 +118,7 @@ class ApiResultParser223Service extends AbstractApiResultParser {
             // Decision to skip this whole error because specific errors will be spit out from the inner loop
             // but keeping placeholder in case this is augmented later by DHIS 2
             /*
-            if (data.status == "ERROR" || data.status == "WARNING") {
+            if (data.status == ERROR || data.status == WARNING) {
                 result.errors << [code: "dhis2.error", args: [action, ""]]
             }
             */

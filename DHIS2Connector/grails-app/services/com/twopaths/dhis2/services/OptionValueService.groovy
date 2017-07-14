@@ -85,6 +85,23 @@ class OptionValueService {
     }
 
     /**
+     * Deletes the specified option value (option)
+     *
+     * @param auth DHIS 2 credentials
+     * @param optionValueId Id of the option value (option) to delete
+     * @param apiVersion DHIS 2 api version
+     * @return The parsed Result object
+     */
+    def delete (def auth, def optionValueId, ApiVersion apiVersion = null) {
+
+        def path = "${PATH}/${optionValueId}"
+
+        def result = apiService.delete(auth, path, [:], ContentType.JSON, apiVersion)
+
+        return result
+    }
+
+    /**
      * Retrieves the optionValue (option) with the specified code
      *
      * @param auth DHIS 2 Credentials

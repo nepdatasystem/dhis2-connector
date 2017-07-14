@@ -41,7 +41,7 @@ import groovyx.net.http.ContentType
  *
  * nep.sqlview.datasets.with.data.name from nep.properties ("Data Sets With Data"):
  *
- * select distinct ds.uid from datasetmembers dsm inner join dataset ds on dsm.datasetid=ds.datasetid where exists (select 1 from datavalue dv where dv.dataelementid=dsm.dataelementid);
+ * select distinct ds.uid from datasetelement dse inner join dataset ds on dse.datasetid=ds.datasetid where exists (select 1 from datavalue dv where dv.dataelementid=dse.dataelementid);
  *
  * nep.sqlview.programs.with.data.name ("Programs With Data")
  *
@@ -82,17 +82,28 @@ class SqlViewService {
      * Retrieves the view data for the specified view
      *
      * @param auth DHIS 2 Credentials
-     * @param sqlViewId
+     * @param sqlViewId Id of the sql view to get view data for
+     * @param criteria Map of criteria to use for retrieval of view data
      * @param apiVersion ApiVersion to use
      * @return The view data for the specified view
      */
-    def getViewData (def auth, def sqlViewId, ApiVersion apiVersion = null) {
+    def getViewData (def auth, def sqlViewId, def criteria = [:], ApiVersion apiVersion = null) {
 
         if (!sqlViewId) {
             return null
         }
+        def queryString = null
 
-        def data = apiService.get(auth, PATH + "/${sqlViewId}/data", [:], null, apiVersion)?.data
+        if (criteria) {
+            // use as query string instead of query params map because map keys need to be unique
+            def queryStringArray = []
+            criteria.each { column, value ->
+                queryStringArray << "criteria=${column}:${value}".toString()
+            }
+            queryString = queryStringArray.join("&")
+        }
+
+        def data = apiService.get(auth, PATH + "/${sqlViewId}/data", [:], queryString, apiVersion)?.data
 
         log.debug "sql view data for id ${sqlViewId} : ${data}"
 

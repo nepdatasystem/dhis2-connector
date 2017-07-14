@@ -37,15 +37,18 @@ import org.apache.commons.lang.StringUtils
  */
 abstract class AbstractApiResultParser implements ApiResultParser {
 
+    final String ERROR = "ERROR"
+    final String WARNING = "WARNING"
+    final String UNKNOWN = "UNKNOWN"
 
     int getSucceededCount(ApiActionType action, def importCount) {
         def succeeded = 0
 
         if (importCount) {
             switch (action) {
-            // Some POSTs allow update so need to check the imported and updated count...
+            // Some POSTs allow update and delete so need to check the imported and updated count...
                 case ApiActionType.Import:
-                    succeeded = (importCount?.imported ?: 0) + (importCount?.updated ?: 0)
+                    succeeded = (importCount?.imported ?: 0) + (importCount?.updated ?: 0) + (importCount?.deleted ?:0)
                     break
                 case ApiActionType.Update:
                     succeeded = importCount?.updated ?: 0

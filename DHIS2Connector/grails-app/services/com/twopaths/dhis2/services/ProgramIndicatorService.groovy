@@ -27,27 +27,57 @@
  *
  */
 
-package com.twopaths.dhis2.api
+package com.twopaths.dhis2.services
+
+import com.twopaths.dhis2.api.ApiVersion
+import grails.transaction.Transactional
+import groovyx.net.http.ContentType
 
 /**
- * DHIS 2 defined value types
- * This is the list of supported DHIS ValueTypes for the DHIS 2 Connector, which is
- * a subset of the full list of DHIS 2 ValueTypes: https://www.dhis2.org/download/apidocs/org/hisp/dhis/common/ValueType.html
+ * Service to do Program Indicator CRUD with the DHIS 2 API
  */
-enum ValueType {
-    INTEGER ("INTEGER"),
-    NUMBER ("NUMBER"),
-    TEXT ("TEXT")
+@Transactional
+class ProgramIndicatorService {
 
-    private String name
+    final def PATH = "/programIndicators"
 
+    def apiService
 
-    private ValueType (String name) {
-        this.name = name
+    /**
+     * Finds all Program Indicators for the specified program
+     *
+     * @param auth DHIS 2 credentials
+     * @param programId The id of the program to retrieve program indicators for
+     * @param apiVersion DHIS 2 api version
+     * @return found Program Indicators if any
+     */
+    def findByProgramId(def auth, def programId, ApiVersion apiVersion = null) {
+
+        def queryParams = [filter: "program.id:eq:${programId}"]
+
+        def programIndicators = apiService.get(auth, "${PATH}", queryParams, null, apiVersion)?.data?.programIndicators
+
+        return programIndicators
     }
 
-    public String value() {
-        name
-    }
+    /**
+     * Deletes the specified program indicator
+     *
+     * @param auth DHIS 2 credentials
+     * @param programIndicatorId The id of the program indicator to delete
+     * @param apiVersion DHIS 2 api version
+     * @return The parsed Result object
+     */
+    def delete(def auth, def programIndicatorId, ApiVersion apiVersion = null) {
 
+        log.debug ">>> delete, programIndicatorId: " + programIndicatorId
+
+        def path = "${PATH}/${programIndicatorId}"
+
+        def result = apiService.delete(auth, path, [:], ContentType.JSON, apiVersion)
+
+        log.debug "<<< delete, programIndicatorId, result: " + result
+
+        return result
+    }
 }

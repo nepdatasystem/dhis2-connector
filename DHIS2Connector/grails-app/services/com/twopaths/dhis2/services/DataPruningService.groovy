@@ -27,27 +27,38 @@
  *
  */
 
-package com.twopaths.dhis2.api
+package com.twopaths.dhis2.services
+
+import com.twopaths.dhis2.api.ApiVersion
+import grails.transaction.Transactional
+import groovyx.net.http.ContentType
 
 /**
- * DHIS 2 defined value types
- * This is the list of supported DHIS ValueTypes for the DHIS 2 Connector, which is
- * a subset of the full list of DHIS 2 ValueTypes: https://www.dhis2.org/download/apidocs/org/hisp/dhis/common/ValueType.html
+ * Service to do data pruning (deletion) for data elements with the DHIS 2 API
  */
-enum ValueType {
-    INTEGER ("INTEGER"),
-    NUMBER ("NUMBER"),
-    TEXT ("TEXT")
+@Transactional
+class DataPruningService {
 
-    private String name
+    final def PATH = "/maintenance/dataPruning"
+    final def DATA_ELEMENT_SUB_PATH = "dataElements"
 
+    def apiService
 
-    private ValueType (String name) {
-        this.name = name
+    /**
+     * Prunes (deletes) all data associated with the specified data element
+     *
+     * @param auth DHIS 2 credentials
+     * @param dataElementId
+     * @param apiVersion DHIS 2 api version
+     * @return The parsed Result object
+     */
+    def pruneDataElement(def auth, def dataElementId, ApiVersion apiVersion = null) {
+
+        def result = apiService.post(auth, "${PATH}/${DATA_ELEMENT_SUB_PATH}/${dataElementId}",
+                null, [:], ContentType.JSON, apiVersion )
+
+        log.debug "prune, result: " + result
+
+        return result
     }
-
-    public String value() {
-        name
-    }
-
 }

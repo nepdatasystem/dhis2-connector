@@ -41,7 +41,7 @@ class ApiResultParserFactoryService {
 
     def apiResultParser223Service
     def apiResultParser224Service
-    def apiResultParserDefaultService
+    def apiResultParser225Service
 
     /**
      * Returns the appropriate parser for the specified api version
@@ -58,10 +58,9 @@ class ApiResultParserFactoryService {
             case ApiVersion.DHIS2_VERSION_224 :
                 return apiResultParser224Service;
                 break;
-            case ApiVersion.DHIS2_DEFAULT_VERSION :
-                return apiResultParserDefaultService
+            case ApiVersion.DHIS2_VERSION_225 :
+                return apiResultParser225Service;
                 break;
-
         }
     }
 }

@@ -50,7 +50,7 @@ class ApiService {
     def context
 
     // This value can be set globally for the app
-    ApiVersion globalApiVersion = ApiVersion.DHIS2_DEFAULT_VERSION
+    ApiVersion globalApiVersion = ApiVersion.DHIS2_VERSION_225
 
     final def API_PATH = "/api"
 
@@ -124,6 +124,73 @@ class ApiService {
 
         return apiResultParserFactoryService.getParser(apiVersion)
                 .parse(ApiActionType.Import, response?.data, response?.status, body)
+    }
+
+    /**
+     * DELETE
+     *
+     * @param auth DHIS 2 Credentials
+     * @param subPath sub path of the API to use for this delete
+     * @param query The map of query parameters for this delete
+     * @param contentType content type to use for this delete
+     * @param apiVersion ApiVersion to use for this delete
+     * @return parsed Result object
+     */
+    Result delete(def auth, def subPath, def query=[:], def contentType = ContentType.JSON,
+                ApiVersion apiVersion = null) {
+
+        // consumer may have explicitly passed in null
+        if (!apiVersion) {
+            apiVersion = globalApiVersion
+        }
+
+        def path = API_PATH + apiVersion.apiVersionSubPath + subPath
+
+        path = context + path
+
+        log.debug "delete, path: " + path + ", query: " + query
+
+        RESTClient http = getRestClient(auth)
+
+        def response
+
+        // Failure handler...get the response anyway
+        http.handler.failure = { resp, json ->
+            log.error "Unexpected failure: ${resp.statusLine}, resp: ${resp}, json: ${json}"
+            resp.setData(json)
+            return resp
+        }
+
+        // DELETE the request and get the response
+        try {
+            response = http.delete(
+                    path: path,
+                    query: query,
+                    contentType: contentType,
+                    requestContentType: ContentType.JSON)
+        } catch (Exception e) {
+            log.error "Exception: " + e
+            if (!response) {
+                response = [
+                        status : HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                        data : [
+                                status : "ERROR",
+                                message : e.message
+                        ]
+                ]
+            }
+        }
+
+        if (response?.status in [HttpStatus.SC_OK]) {
+            log.debug "put, OK response?.status: ${response?.status}"
+        }
+
+        if (response?.status in [HttpStatus.SC_CONFLICT]) {
+            log.debug "delete, conflict response?.status: ${response?.status}"
+        }
+
+        return apiResultParserFactoryService.getParser(apiVersion)
+                .parse(ApiActionType.Delete, response?.data, response?.status)
     }
 
     /**

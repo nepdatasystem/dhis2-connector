@@ -29,6 +29,7 @@
 
 package com.twopaths.dhis2.services
 
+import com.twopaths.dhis2.api.ApiStrategy
 import com.twopaths.dhis2.api.ApiVersion
 import grails.transaction.Transactional
 import groovyx.net.http.ContentType
@@ -44,7 +45,7 @@ class MetadataService {
     def apiService
 
     /*
-     * Creates or updates (POSTs) objects via the DHIS 2 Metadata API
+     * Creates, updates, or deletes (via POSTs) objects via the DHIS 2 Metadata API
      *
      * Possible versions for the metadata API as of v 2.24:
      * - ApiVersion.DHIS2_DEFAULT_VERSION
@@ -61,10 +62,50 @@ class MetadataService {
 
         log.debug ">>> create metadata: " + metadata
 
-        def result = apiService.post(auth, PATH, metadata, query, ContentType.JSON, apiVersion)
+        def result = post(auth, metadata, query, apiVersion)
 
         log.debug "<<< createOrUpdate metadata, result: " + result
 
         return result
+    }
+
+    /**
+     * The delete function is essentially still a post to the metadata API, with the added
+     * query param of "importStrategy=DELETE"
+     *
+     * @param auth DHIS 2 credentials
+     * @param metadata the metadata to delete
+     * @param query API query params
+     * @param apiVersion which API version to use
+     * @return the Result object encapsulating the results from the metadata API call
+     */
+    def delete (def auth, def metadata, def query = [:], ApiVersion apiVersion = null) {
+
+        log.debug ">>> delete metadata: " + metadata
+
+        if (!query?.importStrategy) {
+            query << [importStrategy : ApiStrategy.DELETE.value()]
+        }
+
+        def result = post(auth, metadata, query, apiVersion)
+
+        log.debug "<<< delete metadata, result: " + result
+
+        return result
+    }
+
+    /**
+     * This method does the actual POST to the DHIS 2 metadata API
+     *
+     * @param auth DHIS 2 credentials
+     * @param metadata the metadata to delete
+     * @param query API query params
+     * @param apiVersion which API version to use
+     * @return the Result object encapsulating the results from the metadata API call
+     */
+    private def post(def auth, def metadata, def query = [:], ApiVersion apiVersion = null) {
+
+        return apiService.post(auth, PATH, metadata, query, ContentType.JSON, apiVersion)
+
     }
 }

@@ -26,8 +26,7 @@
   ~ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   ~
   -->
-
-<plugin name='dhis-2-connector' version='2.24.5' grailsVersion='2.4 &gt; *'>
+<plugin name='dhis-2-connector' version='2.25.5' grailsVersion='2.4 &gt; *'>
   <author>2Paths</author>
   <authorEmail>info@2paths.com</authorEmail>
   <title>DHIS 2 Connector Plugin</title>
@@ -37,7 +36,7 @@
   <resources>
     <resource>com.twopaths.api.ApiResultParser223Service</resource>
     <resource>com.twopaths.api.ApiResultParser224Service</resource>
-    <resource>com.twopaths.api.ApiResultParserDefaultService</resource>
+    <resource>com.twopaths.api.ApiResultParser225Service</resource>
     <resource>com.twopaths.api.ApiResultParserFactoryService</resource>
     <resource>com.twopaths.api.ApiService</resource>
     <resource>com.twopaths.dhis2.services.AuthenticationDHIS2ConnectionException</resource>
@@ -45,20 +44,33 @@
     <resource>com.twopaths.dhis2.services.CategoryOptionComboService</resource>
     <resource>com.twopaths.dhis2.services.CategoryOptionService</resource>
     <resource>com.twopaths.dhis2.services.CategoryService</resource>
+    <resource>com.twopaths.dhis2.services.ChartService</resource>
+    <resource>com.twopaths.dhis2.services.DashboardItemService</resource>
     <resource>com.twopaths.dhis2.services.DataElementService</resource>
+    <resource>com.twopaths.dhis2.services.DataPruningService</resource>
     <resource>com.twopaths.dhis2.services.DataSetService</resource>
     <resource>com.twopaths.dhis2.services.DataValueService</resource>
     <resource>com.twopaths.dhis2.services.EnrollmentService</resource>
+    <resource>com.twopaths.dhis2.services.EventChartService</resource>
+    <resource>com.twopaths.dhis2.services.EventReportService</resource>
     <resource>com.twopaths.dhis2.services.EventService</resource>
+    <resource>com.twopaths.dhis2.services.IndicatorService</resource>
     <resource>com.twopaths.dhis2.services.LoginService</resource>
+    <resource>com.twopaths.dhis2.services.MapService</resource>
     <resource>com.twopaths.dhis2.services.MetadataService</resource>
     <resource>com.twopaths.dhis2.services.OptionSetService</resource>
     <resource>com.twopaths.dhis2.services.OptionValueService</resource>
     <resource>com.twopaths.dhis2.services.OrganisationUnitLevelService</resource>
     <resource>com.twopaths.dhis2.services.OrganisationUnitService</resource>
+    <resource>com.twopaths.dhis2.services.ProgramDataElementService</resource>
+    <resource>com.twopaths.dhis2.services.ProgramIndicatorService</resource>
+    <resource>com.twopaths.dhis2.services.ProgramRuleService</resource>
+    <resource>com.twopaths.dhis2.services.ProgramRuleVariableService</resource>
     <resource>com.twopaths.dhis2.services.ProgramService</resource>
     <resource>com.twopaths.dhis2.services.ProgramStageDataElementService</resource>
     <resource>com.twopaths.dhis2.services.ProgramStageService</resource>
+    <resource>com.twopaths.dhis2.services.ProgramTrackedEntityAttributeService</resource>
+    <resource>com.twopaths.dhis2.services.ReportTableService</resource>
     <resource>com.twopaths.dhis2.services.ResourceTableService</resource>
     <resource>com.twopaths.dhis2.services.SqlViewService</resource>
     <resource>com.twopaths.dhis2.services.SystemIdService</resource>

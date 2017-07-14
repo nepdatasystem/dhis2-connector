@@ -48,7 +48,7 @@ class OrganisationUnitLevelService {
      * @param auth DHIS 2 Credentials
      * @param fields Fields requested in the response from the API
      * @param apiVersion ApiVersion to use
-     * @return
+     * @return A lookup map of OrganisationUnitLevel names by level
      */
     def getLookup(def auth, ArrayList<String> fields = [":all"],
                   ApiVersion apiVersion = null) {

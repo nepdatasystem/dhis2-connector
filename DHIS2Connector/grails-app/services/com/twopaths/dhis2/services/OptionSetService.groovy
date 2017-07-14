@@ -108,6 +108,23 @@ class OptionSetService {
     }
 
     /**
+     * Deletes the specified option set
+     *
+     * @param auth DHIS 2 credentials
+     * @param optionSetId Id of the option set to delete
+     * @param apiVersion DHIS 2 api version
+     * @return The parsed Result object
+     */
+    def delete (def auth, def optionSetId, ApiVersion apiVersion = null) {
+
+        def path = "${PATH}/${optionSetId}"
+
+        def result = apiService.delete(auth, path, [:], ContentType.JSON, apiVersion)
+
+        return result
+    }
+
+    /**
      * Retrieves an option set by id
      *
      * @param auth DHIS 2 Credentials

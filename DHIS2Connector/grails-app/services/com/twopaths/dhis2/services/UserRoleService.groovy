@@ -144,4 +144,22 @@ class UserRoleService {
         return result
     }
 
+    /**
+     * Unassigns the specified program from the specified user role
+     *
+     * @param auth DHIS 2 credentials
+     * @param userRole The user role to unassign the program from
+     * @param programId The id of the program to unassign from the user role
+     * @param apiVersion DHIS 2 api version
+     * @return The parsed Result object
+     */
+    def unassignProgramFromUserRole(def auth, def userRole, def programId,
+                                ApiVersion apiVersion = null) {
+
+        def path = "${PATH}/${userRole.id}/${PROGRAM_SUBPATH}/${programId}"
+
+        def result = apiService.delete(auth, path, [:], ContentType.JSON, apiVersion)
+
+        return result
+    }
 }
