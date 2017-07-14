@@ -1,0 +1,15 @@
+# ECLIPSE
+DHIS2Connector/.tern-project
+DHIS2Connector/.classpath
+DHIS2Connector/.project
+DHIS2Connector/.settings
+DHIS2Connector/target-eclipse
+DHIS2Connector/target
+
+# IDEA
+DHIS2Connector/.idea/
+DHIS2Connector/target/
+DHIS2Connector/*.iml
+DHIS2Connector/.idea/*.log
+DHIS2Connector/out/
+/.idea/

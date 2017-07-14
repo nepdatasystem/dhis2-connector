@@ -1,0 +1,71 @@
+<!--
+  ~ Copyright (c) 2014-2017. Institute for International Programs at Johns Hopkins University.
+  ~ All rights reserved.
+  ~
+  ~ Redistribution and use in source and binary forms, with or without
+  ~ modification, are permitted provided that the following conditions are met:
+  ~ Redistributions of source code must retain the above copyright notice, this
+  ~ list of conditions and the following disclaimer.
+  ~ Redistributions in binary form must reproduce the above copyright notice,
+  ~ this list of conditions and the following disclaimer in the documentation
+  ~ and/or other materials provided with the distribution.
+  ~ Neither the name of the NEP project, Institute for International Programs,
+  ~ Johns Hopkins University nor the names of its contributors may
+  ~ be used to endorse or promote products derived from this software without
+  ~ specific prior written permission.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+  ~ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  ~ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  ~ DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+  ~ ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+  ~ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+  ~ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+  ~ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  ~ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  ~ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  ~
+  -->
+
+<plugin name='dhis-2-connector' version='2.24.5' grailsVersion='2.4 &gt; *'>
+  <author>2Paths</author>
+  <authorEmail>info@2paths.com</authorEmail>
+  <title>DHIS 2 Connector Plugin</title>
+  <description>Provides services for DHIS2 Connectivity
+</description>
+  <type>DHIS2ConnectorGrailsPlugin</type>
+  <resources>
+    <resource>com.twopaths.api.ApiResultParser223Service</resource>
+    <resource>com.twopaths.api.ApiResultParser224Service</resource>
+    <resource>com.twopaths.api.ApiResultParserDefaultService</resource>
+    <resource>com.twopaths.api.ApiResultParserFactoryService</resource>
+    <resource>com.twopaths.api.ApiService</resource>
+    <resource>com.twopaths.dhis2.services.AuthenticationDHIS2ConnectionException</resource>
+    <resource>com.twopaths.dhis2.services.CategoryComboService</resource>
+    <resource>com.twopaths.dhis2.services.CategoryOptionComboService</resource>
+    <resource>com.twopaths.dhis2.services.CategoryOptionService</resource>
+    <resource>com.twopaths.dhis2.services.CategoryService</resource>
+    <resource>com.twopaths.dhis2.services.DataElementService</resource>
+    <resource>com.twopaths.dhis2.services.DataSetService</resource>
+    <resource>com.twopaths.dhis2.services.DataValueService</resource>
+    <resource>com.twopaths.dhis2.services.EnrollmentService</resource>
+    <resource>com.twopaths.dhis2.services.EventService</resource>
+    <resource>com.twopaths.dhis2.services.LoginService</resource>
+    <resource>com.twopaths.dhis2.services.MetadataService</resource>
+    <resource>com.twopaths.dhis2.services.OptionSetService</resource>
+    <resource>com.twopaths.dhis2.services.OptionValueService</resource>
+    <resource>com.twopaths.dhis2.services.OrganisationUnitLevelService</resource>
+    <resource>com.twopaths.dhis2.services.OrganisationUnitService</resource>
+    <resource>com.twopaths.dhis2.services.ProgramService</resource>
+    <resource>com.twopaths.dhis2.services.ProgramStageDataElementService</resource>
+    <resource>com.twopaths.dhis2.services.ProgramStageService</resource>
+    <resource>com.twopaths.dhis2.services.ResourceTableService</resource>
+    <resource>com.twopaths.dhis2.services.SqlViewService</resource>
+    <resource>com.twopaths.dhis2.services.SystemIdService</resource>
+    <resource>com.twopaths.dhis2.services.TrackedEntityAttributeService</resource>
+    <resource>com.twopaths.dhis2.services.TrackedEntityInstanceService</resource>
+    <resource>com.twopaths.dhis2.services.TrackedEntityService</resource>
+    <resource>com.twopaths.dhis2.services.UserRoleService</resource>
+    <resource>com.twopaths.dhis2.services.UserService</resource>
+  </resources>
+</plugin>
